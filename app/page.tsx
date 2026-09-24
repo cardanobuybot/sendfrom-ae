@@ -53,17 +53,29 @@ export default async function Home() {
   return (
     <>
       <section className="pt-4">
-        <h1 className="text-4xl sm:text-5xl font-black leading-tight tracking-tight">
+        {/* clamp: at 360 px viewport the browser lands on ~28 px, at
+            wider viewports it grows up to the 48 px cap. Keeps the H1
+            + subhead + CTAs above the fold on a typical Android phone
+            so the "Best for…" block starts visible without scrolling. */}
+        <h1
+          className="font-black tracking-tight"
+          style={{ fontSize: "clamp(28px, 8vw, 48px)", lineHeight: 1.12 }}
+        >
           Send money from the UAE — compare the cheapest ways
         </h1>
-        <p className="mt-4 text-lg muted">
+        <p className="mt-3 text-base sm:text-lg muted">
           Independent, English-language guide for expats in the UAE — Filipinos,
           Indians and Pakistanis. Compare fees, exchange rates and speed
           across the biggest providers.
         </p>
-        <div className="mt-6 flex gap-3 flex-wrap">
+        <div className="mt-5 flex items-center gap-4 flex-wrap">
           <Link href="/compare" className="btn btn-primary">Compare all providers</Link>
-          <Link href="/how-we-compare" className="btn">How we compare</Link>
+          <Link
+            href="/how-we-compare"
+            className="underline text-sm muted hover:text-[color:var(--fg)] hover:no-underline"
+          >
+            How we compare →
+          </Link>
         </div>
       </section>
 
