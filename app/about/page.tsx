@@ -14,8 +14,7 @@ export default function Page() {
       <p className="mt-4 leading-relaxed">
         {site.name} is an independent guide for the millions of expats living
         in the UAE who need to send money home. We focus on the biggest
-        corridors — Philippines, India and Pakistan — plus a section for
-        seafarers.
+        corridors — Philippines, India and Pakistan.
       </p>
       <p className="mt-4 leading-relaxed">
         We are not a money-transfer service, we do not hold funds, and we are

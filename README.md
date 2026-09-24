@@ -1,6 +1,6 @@
 # sendfrom.ae
 
-Independent English-language guide for expats in the UAE (Filipinos, Indians, Pakistanis, seafarers) comparing money-transfer providers.
+Independent English-language guide for expats in the UAE (Filipinos, Indians, Pakistanis) comparing money-transfer providers.
 
 **Live domain:** https://sendfrom.ae
 

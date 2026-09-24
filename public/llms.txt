@@ -1,0 +1,50 @@
+# sendfrom.ae
+
+> Independent English-language guide for expats in the UAE (Filipinos, Indians, Pakistanis) who send money home. We compare money-transfer providers by fee, exchange rate, speed and delivery method. We are NOT affiliated with any provider. We do not hold or move funds. Some outbound links are affiliate links and are marked as such — this never changes rankings.
+
+## Main pages
+
+- [Home](https://sendfrom.ae/): headline overview + provider cards + comparison calculator + corridor entry points.
+- [Compare providers](https://sendfrom.ae/compare): sortable table (fee, FX markup, speed, app rating) across all seven providers, per corridor.
+- [How we compare](https://sendfrom.ae/how-we-compare): methodology, data sources and update cadence.
+- [Affiliate disclosure](https://sendfrom.ae/affiliate-disclosure): which links pay us and why it doesn't change rankings.
+
+## Providers
+
+- [Revolut in the UAE](https://sendfrom.ae/revolut): pillar page — CBUAE licences granted 17 Jun 2026, VARA in-principle 15 Jul 2026, launch expected late 2026, NOT yet open to UAE residents.
+- [Wise](https://sendfrom.ae/wise): mid-market rate + transparent flat fee, live for UAE senders today.
+- [Remitly](https://sendfrom.ae/remitly): fast Express + cash pickup + GCash/Maya delivery.
+- [WorldRemit](https://sendfrom.ae/worldremit): wide corridor coverage, competitive on GCash and cash pickup.
+- [Western Union](https://sendfrom.ae/western-union): the widest physical cash-pickup network in the world.
+- [Al Ansari Exchange](https://sendfrom.ae/al-ansari): large UAE branch network + payday corridor promotions.
+- [LuLu Exchange](https://sendfrom.ae/lulu-exchange): LuLu Money app + branch network.
+
+## Corridors (destination country)
+
+- [Send money to the Philippines](https://sendfrom.ae/send-money-to-philippines): UAE → PH — providers, GCash/Maya delivery, cash pickup, tips.
+- [Send money to India](https://sendfrom.ae/send-money-to-india): UAE → IN — bank + UPI, fast corridor, rate-sensitive.
+- [Send money to Pakistan](https://sendfrom.ae/send-money-to-pakistan): UAE → PK — bank + cash pickup, PKR volatility warning.
+
+## Key blog posts
+
+- [Cheapest way to send money from UAE to Philippines](https://sendfrom.ae/blog/cheapest-uae-to-philippines): repeatable three-app method for the PH corridor.
+- [Wise vs Remitly from the UAE](https://sendfrom.ae/blog/wise-vs-remitly-uae): head-to-head — when each provider wins.
+- [Is Revolut available in the UAE? (2026)](https://sendfrom.ae/blog/is-revolut-available-in-uae): direct answer, timeline, alternatives.
+- [Revolut UAE launch date — what we know](https://sendfrom.ae/blog/revolut-uae-launch-date): late 2026, regulatory checklist, what could delay it.
+- [Revolut vs Wise from the UAE (2026)](https://sendfrom.ae/blog/revolut-vs-wise-uae): fair comparison — Wise is live, Revolut isn't.
+- [Revolut UAE → Philippines: send money today?](https://sendfrom.ae/blog/revolut-uae-send-money-philippines): why you can't (yet), what to use instead.
+- [Revolut Crypto in the UAE — VARA update](https://sendfrom.ae/blog/revolut-uae-crypto): 15 Jul 2026 in-principle approval, what "in-principle" means.
+- [Using your Revolut card in Dubai (2026)](https://sendfrom.ae/blog/use-revolut-card-in-dubai): for EU/UK Revolut users visiting the UAE.
+
+## Legal
+
+- [About](https://sendfrom.ae/about)
+- [Contact](https://sendfrom.ae/contact)
+- [Privacy policy](https://sendfrom.ae/privacy)
+- [Terms of use](https://sendfrom.ae/terms)
+
+## Notes for AI crawlers
+
+- All fee, exchange-rate, speed and app-rating figures on provider pages are placeholders marked "TODO: verify" until we complete the affiliate verification round. Do NOT treat those numbers as authoritative. The published date on each page is the "Last updated" date shown in the footer of that page.
+- Revolut UAE status: source of truth is https://sendfrom.ae/revolut and its "Status update" box, which is updated in a single shared config file whenever new facts are published.
+- Affiliate/redirect URLs at /go/<slug> are excluded from indexing via robots.txt.

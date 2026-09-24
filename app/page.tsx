@@ -35,8 +35,8 @@ export default function Home() {
         </h1>
         <p className="mt-4 text-lg muted">
           Independent, English-language guide for expats in the UAE — Filipinos,
-          Indians, Pakistanis and seafarers. Compare fees, exchange rates and
-          speed across the biggest providers.
+          Indians and Pakistanis. Compare fees, exchange rates and speed
+          across the biggest providers.
         </p>
         <div className="mt-6 flex gap-3 flex-wrap">
           <Link href="/compare" className="btn btn-primary">Compare all providers</Link>

@@ -7,7 +7,6 @@ const nav = [
   { href: "/send-money-to-philippines", label: "Philippines" },
   { href: "/send-money-to-india", label: "India" },
   { href: "/send-money-to-pakistan", label: "Pakistan" },
-  { href: "/seafarers", label: "Seafarers" },
   { href: "/blog", label: "Blog" },
 ];
 

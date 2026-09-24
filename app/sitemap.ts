@@ -10,7 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     "",
     "/compare",
-    "/seafarers",
     "/blog",
     "/about",
     "/contact",
