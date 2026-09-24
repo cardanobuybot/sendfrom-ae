@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { providers } from "@/config/providers";
 import { corridors } from "@/config/corridors";
@@ -6,6 +7,20 @@ import ProviderCard from "@/components/ProviderCard";
 import Calculator from "@/components/Calculator";
 import FAQ from "@/components/FAQ";
 import DataDisclaimer from "@/components/DataDisclaimer";
+import { fetchMidRate } from "@/lib/mid-rate";
+
+export const metadata: Metadata = {
+  // Absolute — bypass the layout template so the browser tab reads
+  // exactly what the SEO brief asked for (under 60 chars including
+  // the "2026" tag).
+  title: { absolute: "Send Money from UAE: Compare Fees & Rates (2026)" },
+  description: site.description,
+  alternates: { canonical: site.url },
+};
+
+// Homepage is a Server Component; refresh cached data every hour to
+// match the /api/mid-rate cache TTL.
+export const revalidate = 3600;
 
 const homeFaq = [
   {
@@ -26,7 +41,15 @@ const homeFaq = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  // SSR fetch — passes rate into Calculator so the initial HTML shows
+  // "1,000 AED ≈ 17,076 PHP" instead of "Loading current rate…".
+  const midRate = await fetchMidRate();
+
+  // Revolut card is deferred to the bottom of "Providers we track".
+  const nonRevolut = providers.filter((p) => p.slug !== "revolut");
+  const revolut = providers.find((p) => p.slug === "revolut");
+
   return (
     <>
       <section className="pt-4">
@@ -44,13 +67,46 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="mt-8 card p-5" aria-labelledby="best-for-title">
+        <h2 id="best-for-title" className="text-xl font-semibold">Best for…</h2>
+        <ul className="mt-3 space-y-2 text-sm">
+          <li>
+            <b>Bank deposit with a transparent fee:</b>{" "}
+            <Link href="/wise" className="underline">Wise</Link>{" "}
+            <span className="muted">— mid-market rate + a small flat fee shown up-front.</span>
+          </li>
+          <li>
+            <b>First transfer to the Philippines:</b>{" "}
+            <Link href="/remitly" className="underline">Remitly</Link>{" "}
+            <span className="muted">— new-customer promo (17.16 PHP, no fee on first transfer, first AED 4,000).</span>
+          </li>
+          <li>
+            <b>Cash pickup for the recipient:</b>{" "}
+            <Link href="/western-union" className="underline">Western Union</Link>{" · "}
+            <Link href="/al-ansari" className="underline">Al Ansari</Link>
+          </li>
+          <li>
+            <b>Branch near you in the UAE:</b>{" "}
+            <Link href="/al-ansari" className="underline">Al Ansari</Link>{" · "}
+            <Link href="/lulu-exchange" className="underline">LuLu</Link>
+          </li>
+        </ul>
+        <p className="muted text-xs mt-3">
+          Based on our checks on <b>{site.dataLastUpdated}</b>; always compare
+          the final amount inside the provider's app before sending.
+        </p>
+      </section>
+
       <section className="mt-10">
         <h2 className="text-2xl font-bold">Providers we track</h2>
         <p className="muted text-sm mt-1">
           Seven of the biggest options for outbound transfers from the UAE.
         </p>
         <div className="grid sm:grid-cols-2 gap-3 mt-4">
-          {providers.map((p) => <ProviderCard key={p.slug} p={p} />)}
+          {nonRevolut.map((p) => <ProviderCard key={p.slug} p={p} />)}
+          {/* Revolut is the last card — see ProviderCard.tsx for the
+              "Not yet available" variant. */}
+          {revolut && <ProviderCard key={revolut.slug} p={revolut} />}
         </div>
       </section>
 
@@ -68,7 +124,7 @@ export default function Home() {
       </section>
 
       <section className="mt-10">
-        <Calculator />
+        <Calculator initialRate={midRate} />
       </section>
 
       <section className="mt-10 card p-5">
@@ -76,8 +132,8 @@ export default function Home() {
         <ul className="mt-3 space-y-2 text-sm">
           <li><b>Independent.</b> We are not a provider. We do not hold funds.</li>
           <li><b>Transparent.</b> Where we earn a commission, we say so — and we do not let payouts change the rankings.</li>
-          <li><b>Editable.</b> Every number here has a "last updated" date and a link back to the source app.</li>
-          <li><b>Neutral design.</b> We avoid any provider's branding to make sure this site is never mistaken for their official one.</li>
+          <li><b>Dated sources.</b> Every number here has a &quot;last updated&quot; date and a link back to the source app.</li>
+          <li><b>Neutral design.</b> We avoid any provider&apos;s branding to make sure this site is never mistaken for their official one.</li>
         </ul>
         <div className="mt-4 flex gap-2 flex-wrap">
           <Link href="/how-we-compare" className="btn">How we compare</Link>

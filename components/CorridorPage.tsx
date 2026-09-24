@@ -24,9 +24,15 @@ export function corridorMetadata(slug: string): Metadata {
 export default function CorridorPage({ slug }: { slug: string }) {
   const c = getCorridor(slug);
   if (!c) return null;
+  // Revolut goes to the tail of every provider list site-wide until
+  // the UAE launch — see /revolut for status. The other providers keep
+  // the editorial ordering from config/corridors.ts.
   const recommended = c.recommendedProviderSlugs
     .map((s) => getProvider(s))
-    .filter((x): x is NonNullable<typeof x> => !!x);
+    .filter((x): x is NonNullable<typeof x> => !!x)
+    .sort((a, b) =>
+      (a.slug === "revolut" ? 1 : 0) - (b.slug === "revolut" ? 1 : 0),
+    );
 
   return (
     <article>

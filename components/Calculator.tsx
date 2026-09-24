@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { providers, type CorridorCode } from "@/config/providers";
+import type { MidRatePayload } from "@/lib/mid-rate";
 
 /**
  * Mid-market rate reference card.
@@ -18,14 +19,6 @@ import { providers, type CorridorCode } from "@/config/providers";
  * Data comes from GET /api/mid-rate (server-cached 1h, sources
  * open.er-api.com — free, no key, supports AED base).
  */
-
-type MidRatePayload = {
-  base: "AED";
-  rates: { PHP: number; INR: number; PKR: number };
-  updatedUtc: string;
-  source: string;
-  sourceHost: string;
-};
 
 const corridors: { code: CorridorCode; label: string; flag: string; currency: string }[] = [
   { code: "PH", label: "Philippines", flag: "🇵🇭", currency: "PHP" },
@@ -47,13 +40,19 @@ function fmtWhen(iso: string): string {
   }
 }
 
-export default function Calculator() {
+export default function Calculator({
+  initialRate,
+}: {
+  initialRate?: MidRatePayload | null;
+}) {
   const [amount, setAmount] = useState<number>(1000);
   const [corridor, setCorridor] = useState<CorridorCode>("PH");
-  const [rate, setRate] = useState<MidRatePayload | null>(null);
+  const [rate, setRate] = useState<MidRatePayload | null>(initialRate ?? null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    // If SSR already handed us a rate, don't fire a duplicate request.
+    if (initialRate) return;
     fetch("/api/mid-rate")
       .then(async (r) => {
         if (!r.ok) throw new Error(`mid-rate ${r.status}`);
@@ -61,7 +60,7 @@ export default function Calculator() {
       })
       .then((d: MidRatePayload) => setRate(d))
       .catch((e) => setErr(e instanceof Error ? e.message : String(e)));
-  }, []);
+  }, [initialRate]);
 
   const activeCurrency = corridors.find((c) => c.code === corridor)!.currency as "PHP" | "INR" | "PKR";
   const targetAmount = useMemo(() => {
@@ -177,74 +176,84 @@ function VerifiedQuotes({
   corridor: CorridorCode;
   currency: "PHP" | "INR" | "PKR";
 }) {
-  const { rows, pinnedRevolut } = useMemo(() => {
-    const all = providers.map((p) => {
+  const { verified, hasRevolut, restCount, note } = useMemo(() => {
+    const shown: {
+      slug: string;
+      name: string;
+      fee: number | null;
+      rate: number | null;
+      net: number;
+      promoFeeLabel?: string;
+      promoRateLabel?: string;
+      isPromo: boolean;
+    }[] = [];
+    let revolut = false;
+    let others = 0;
+    let quoteNote: string | undefined;
+    for (const p of providers) {
+      if (p.slug === "revolut") { revolut = true; continue; }
       const c = p.corridors.find((x) => x.country === corridor);
-      // For ranking + display: prefer standard verified quote; fall back
-      // to promo quote when only that is pinned (Remitly PH new-customer).
-      const isPromo = c?.quoteRecipientAtAed1k == null && c?.promoRecipientAtAed1k != null;
-      return {
-        slug: p.slug,
-        name: p.name,
-        fee: c?.feeAed1k ?? null,
-        rate: c?.quoteRate ?? null,
-        net: c?.quoteRecipientAtAed1k ?? c?.promoRecipientAtAed1k ?? null,
-        promoFeeLabel: c?.promoFeeLabel,
-        promoRateLabel: c?.promoRateLabel,
-        note: p.quoteNote,
-        isPromo,
-      };
-    });
-    const rev = all.find((r) => r.slug === "revolut") ?? null;
-    const rest = all
-      .filter((r) => r.slug !== "revolut")
-      .sort((a, b) => (b.net ?? -1) - (a.net ?? -1));
-    return { rows: rest, pinnedRevolut: rev };
+      if (!c) { others += 1; continue; }
+      const hasStandard = c.quoteRecipientAtAed1k != null;
+      const hasPromo = c.promoRecipientAtAed1k != null;
+      if (hasStandard || hasPromo) {
+        shown.push({
+          slug: p.slug,
+          name: p.name,
+          fee: c.feeAed1k,
+          rate: c.quoteRate ?? null,
+          net: (c.quoteRecipientAtAed1k ?? c.promoRecipientAtAed1k)!,
+          promoFeeLabel: c.promoFeeLabel,
+          promoRateLabel: c.promoRateLabel,
+          isPromo: !hasStandard,
+        });
+        if (p.quoteNote && !quoteNote) quoteNote = p.quoteNote;
+      } else {
+        others += 1;
+      }
+    }
+    shown.sort((a, b) => b.net - a.net);
+    return { verified: shown, hasRevolut: revolut, restCount: others, note: quoteNote };
   }, [corridor]);
 
-  const anyQuoted = rows.some((r) => r.net != null);
-  if (!anyQuoted && !pinnedRevolut) return null;
+  if (verified.length === 0 && !hasRevolut) return null;
 
   return (
     <div className="mt-6 pt-5 border-t border-[var(--card-border)]">
       <h3 className="text-lg font-semibold">Verified quotes at 1,000 AED</h3>
       <p className="muted text-xs mt-1">
-        Numbers pulled directly from provider calculators on the checked
-        date. Rows marked "promo" are conditional offers, not standard
-        pricing. Others say "Check in app" — we don't invent figures.
+        Only providers with a pinned quote or promo are shown. Rows tagged
+        "promo" are conditional offers, not standard pricing.
       </p>
       <ul className="mt-3 divide-y divide-[var(--card-border)]">
-        {rows.map((r) => (
+        {verified.map((r) => (
           <li key={r.slug} className="py-2 flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-1">
               <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
               {r.isPromo && <PromoBadge />}
             </div>
             <div className="text-right min-w-[180px]">
-              {r.net != null ? (
-                <>
-                  <b>{r.net.toLocaleString()} {currency}</b>
-                  <div className="muted text-xs">
-                    {r.isPromo && r.promoFeeLabel
-                      ? r.promoFeeLabel
-                      : `fee AED ${r.fee?.toFixed(2)}`}
-                    {" · "}
-                    {r.isPromo && r.promoRateLabel
-                      ? "promo rate"
-                      : `rate ${r.rate}`}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <b>Check in app</b>
-                  <div className="muted text-xs">no static quote pinned yet</div>
-                </>
-              )}
+              <b>{r.net.toLocaleString()} {currency}</b>
+              <div className="muted text-xs">
+                {r.isPromo && r.promoFeeLabel
+                  ? r.promoFeeLabel
+                  : `fee AED ${r.fee?.toFixed(2)}`}
+                {" · "}
+                {r.isPromo && r.promoRateLabel
+                  ? "promo rate"
+                  : `rate ${r.rate}`}
+              </div>
             </div>
           </li>
         ))}
-        {pinnedRevolut && (
-          <li className="py-3 mt-2 border-t border-dashed border-[var(--card-border)]">
+        {restCount > 0 && (
+          <li className="py-3 text-sm muted">
+            <b className="text-[color:var(--fg)]">Other providers:</b>{" "}
+            check the final amount in their app.
+          </li>
+        )}
+        {hasRevolut && (
+          <li className="py-3 mt-1 border-t border-dashed border-[var(--card-border)]">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
               <Link href="/revolut" className="font-medium underline">Revolut</Link>
               <span className="text-xs muted">Not yet available in the UAE</span>
@@ -256,11 +265,7 @@ function VerifiedQuotes({
           </li>
         )}
       </ul>
-      {rows.find((r) => r.note) && (
-        <p className="muted text-xs mt-3 italic">
-          {rows.find((r) => r.note)?.note}
-        </p>
-      )}
+      {note && <p className="muted text-xs mt-3 italic">{note}</p>}
     </div>
   );
 }

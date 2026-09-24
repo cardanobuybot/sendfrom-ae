@@ -18,7 +18,11 @@ export default function Header() {
        logo on mobile in both dark and light mode. */
     <header className="sticky top-0 z-30 border-b border-[var(--card-border)] bg-[color:var(--bg)]">
       <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="font-bold tracking-tight text-lg hover:no-underline">
+        <Link href="/" className="font-bold tracking-tight text-lg hover:no-underline flex items-center gap-2">
+          {/* Same icon as the favicon — inline <img> so it loads without
+              JS. The site's accent (--accent = #1f6a52) matches the
+              green square inside the SVG so the brand looks unified. */}
+          <img src="/icon.svg" alt="" width={28} height={28} aria-hidden="true" />
           {site.name}
         </Link>
         <nav className="ml-auto flex items-center gap-1 overflow-x-auto text-[13px]">
