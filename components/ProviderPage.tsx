@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProvider } from "@/config/providers";
+import { getProvider, displayFee, displayMarkup, displayLimit } from "@/config/providers";
 import { site } from "@/config/site";
 import { partners } from "@/config/partners";
 import AffiliateButton from "./AffiliateButton";
@@ -78,7 +78,10 @@ export default function ProviderPage({ slug }: { slug: string }) {
               {c.methods.map((m) => methodLabels[m] ?? m).join(", ")}
             </p>
             <p className="text-sm mt-1 muted">
-              Fee (AED 1,000): {c.feeAed1k == null ? "TODO: verify" : `AED ${c.feeAed1k}`} · FX markup: {c.rateMarkupPct == null ? "TODO: verify" : `${c.rateMarkupPct.toFixed(2)}%`}
+              Fee (AED 1,000): {displayFee(c.feeAed1k)} · FX markup: {displayMarkup(c.rateMarkupPct)}
+              {(c.minAed != null || c.maxAed != null) && (
+                <> · Limits: {displayLimit(c.minAed)}–{displayLimit(c.maxAed)}</>
+              )}
             </p>
           </div>
         ))}
@@ -114,6 +117,29 @@ export default function ProviderPage({ slug }: { slug: string }) {
       </div>
 
       <FAQ items={p.faq} />
+
+      {p.sources.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold mb-3">Sources</h2>
+          <p className="muted text-sm mb-3">
+            Official pages where you can verify the current fees, rates and
+            limits yourself. Numbers change daily — we deliberately don't
+            copy them into this page.
+          </p>
+          <ul className="space-y-2 text-sm">
+            {p.sources.map((s) => (
+              <li key={s.url} className="card p-3">
+                <a href={s.url} rel="noopener noreferrer" target="_blank" className="underline break-all">
+                  {s.label}
+                </a>
+                <div className="muted text-xs mt-1">
+                  {s.url} · checked {s.dateChecked}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <DataDisclaimer lastUpdated={p.dataLastUpdated} />
 

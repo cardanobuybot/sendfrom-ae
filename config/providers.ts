@@ -1,13 +1,17 @@
 /**
  * Provider data — the ONE file to edit for fees, corridors, ratings, etc.
  *
- * Numeric values here are placeholders marked with `TODO: verify`. Do not
- * publish or apply to affiliate programmes until you have replaced them with
- * verified numbers pulled directly from each provider's own app / website.
- *
- * All fees / rate markup / speed shown here are shown on the site with a
- * visible "Rates and fees change daily. Always check the final amount in the
- * provider's app before sending." disclaimer.
+ * Policy on numeric values:
+ * - Provider pricing calculators are dynamic; we do NOT copy live figures
+ *   into this file. Any `feeAed1k` / `rateMarkupPct` / `minAed` / `maxAed`
+ *   left as `null` renders as "Check in app" on the site.
+ * - When you pin a stable, versioned document (e.g. a "Global Service
+ *   Fees PDF" or a help-centre article that quotes a specific figure),
+ *   fill in the number AND add the exact URL to `sources[]` with the
+ *   date you checked.
+ * - `sources[]` per provider is the authoritative list of pages a reader
+ *   or search engine can visit to verify pricing themselves.
+ * - Bump `dataLastUpdated` whenever you touch any of the above.
  */
 
 export type CorridorCode = "PH" | "IN" | "PK";
@@ -22,14 +26,30 @@ export type DeliveryMethod =
 export type CorridorInfo = {
   country: CorridorCode;
   methods: DeliveryMethod[];
-  /** Flat transfer fee in AED for a 1,000 AED transfer. Placeholder. */
+  /**
+   * Flat transfer fee in AED for a 1,000 AED transfer.
+   * `null` renders as "Check in app" on the site (see displayFee()).
+   */
   feeAed1k: number | null;
-  /** Approximate FX markup vs mid-market, in %. Placeholder. */
+  /** Approximate FX markup vs mid-market, in %. `null` → "Check in app". */
   rateMarkupPct: number | null;
   /** Typical delivery time in words (e.g. "minutes", "1-2 days"). */
   speed: string;
   minAed: number | null;
   maxAed: number | null;
+};
+
+/**
+ * An official source URL we point users to for verifying pricing themselves.
+ * `dateChecked` is when we last visited the URL and confirmed it loads.
+ * We do NOT copy numbers from these pages into our data unless we can pin
+ * them to a stable, versioned document — provider pricing calculators are
+ * dynamic and change daily.
+ */
+export type ProviderSource = {
+  url: string;
+  label: string;
+  dateChecked: string;
 };
 
 export type Provider = {
@@ -56,7 +76,20 @@ export type Provider = {
    * Used by Revolut for its UAE-launch disclaimer.
    */
   statusNote?: string;
+  /** Official URLs we cite as the authoritative source of live pricing. */
+  sources: ProviderSource[];
 };
+
+/** UI helper — turn a possibly-null number into a friendly string. */
+export function displayFee(v: number | null): string {
+  return v == null ? "Check in app" : `AED ${v}`;
+}
+export function displayMarkup(v: number | null): string {
+  return v == null ? "Check in app" : `${v.toFixed(2)}%`;
+}
+export function displayLimit(v: number | null): string {
+  return v == null ? "Check in app" : `AED ${v.toLocaleString()}`;
+}
 
 // -------------------------------------------------------------------
 // PROVIDERS
@@ -77,7 +110,7 @@ export const providers: Provider[] = [
       {
         country: "PH",
         methods: ["bank_deposit", "wallet"],
-        feeAed1k: null, // TODO: verify at UAE launch
+        feeAed1k: null,
         rateMarkupPct: null,
         speed: "minutes to same-day (expected)",
         minAed: null,
@@ -135,6 +168,10 @@ export const providers: Provider[] = [
     ],
     statusNote:
       "Revolut has received UAE Central Bank licences (June 2026) but is not yet open to UAE residents. Launch expected late 2026.",
+      sources: [
+      { url: "https://www.revolut.com/", label: 'Revolut homepage (UAE consumer product not yet open)', dateChecked: "2026-09-24" },
+      { url: "https://help.revolut.com/", label: 'Revolut Help Centre — official fees & limits by market', dateChecked: "2026-09-24" },
+    ],
   },
   {
     slug: "wise",
@@ -150,8 +187,8 @@ export const providers: Provider[] = [
       {
         country: "PH",
         methods: ["bank_deposit", "gcash"],
-        feeAed1k: null, // TODO: verify in Wise app
-        rateMarkupPct: null, // TODO: verify (Wise publishes it in-app)
+        feeAed1k: null,
+        rateMarkupPct: null,
         speed: "minutes to 1 day",
         minAed: null,
         maxAed: null,
@@ -185,7 +222,7 @@ export const providers: Provider[] = [
       "Bank funding only — no cash top-up in a branch",
       "Not the fastest for cash-pickup corridors",
     ],
-    appRating: null, // TODO: verify current App Store / Play Store rating
+    appRating: null,
     dataLastUpdated: "2026-09-24",
     howToSend: [
       "Install the Wise app and register with your Emirates ID.",
@@ -203,6 +240,11 @@ export const providers: Provider[] = [
         q: "Is Wise regulated in the UAE?",
         a: "Wise operates in the UAE in partnership with local licensed institutions. Check the latest terms inside the Wise app for the exact regulator.",
       },
+    ],
+      sources: [
+      { url: "https://wise.com/", label: 'Wise homepage & AED corridor calculator', dateChecked: "2026-09-24" },
+      { url: "https://wise.com/help/articles/2932693", label: 'Wise Help — pricing of transfers (canonical fee policy)', dateChecked: "2026-09-24" },
+      { url: "https://wise.com/help/articles/2977951", label: 'Wise Help — send limits per country', dateChecked: "2026-09-24" },
     ],
   },
   {
@@ -253,7 +295,7 @@ export const providers: Provider[] = [
       "Express is faster but noticeably more expensive than Economy",
       "First-transfer promotional rate can be misleading — check the regular rate too",
     ],
-    appRating: null, // TODO: verify
+    appRating: null,
     dataLastUpdated: "2026-09-24",
     howToSend: [
       "Install Remitly and register with your Emirates ID.",
@@ -271,6 +313,10 @@ export const providers: Provider[] = [
         q: "Does Remitly send to GCash and Maya?",
         a: "Yes — both are supported for the UAE-to-Philippines corridor.",
       },
+    ],
+      sources: [
+      { url: "https://www.remitly.com/ae/en", label: 'Remitly UAE homepage & calculator', dateChecked: "2026-09-24" },
+      { url: "https://help.remitly.com/s/", label: 'Remitly Help Centre — Express vs Economy fee policy', dateChecked: "2026-09-24" },
     ],
   },
   {
@@ -336,6 +382,10 @@ export const providers: Provider[] = [
         a: "It depends on the corridor and the amount. For bank-to-bank into India, Wise is often cheaper. For cash pickup in the Philippines, WorldRemit can be competitive. Always compare the final amount the recipient will get in each app.",
       },
     ],
+      sources: [
+      { url: "https://www.worldremit.com/en/united-arab-emirates", label: 'WorldRemit UAE homepage & calculator', dateChecked: "2026-09-24" },
+      { url: "https://www.worldremit.com/en/faq", label: 'WorldRemit FAQ — fees, delivery times, limits', dateChecked: "2026-09-24" },
+    ],
   },
   {
     slug: "western-union",
@@ -398,6 +448,10 @@ export const providers: Provider[] = [
         q: "Do I need a WU account to send in cash?",
         a: "You do not need an online account for over-the-counter cash sends, but you must present a valid ID (Emirates ID in the UAE).",
       },
+    ],
+      sources: [
+      { url: "https://www.westernunion.com/ae/en/home.html", label: 'Western Union UAE homepage & send-money calculator', dateChecked: "2026-09-24" },
+      { url: "https://www.westernunion.com/ae/en/web/global-service-fees.html", label: 'Western Union UAE — Global Service Fees', dateChecked: "2026-09-24" },
     ],
   },
   {
@@ -466,6 +520,11 @@ export const providers: Provider[] = [
         a: "For very large amounts, you can sometimes ask the branch manager for a slightly better rate — but this is not always granted.",
       },
     ],
+      sources: [
+      { url: "https://www.alansariexchange.com/", label: 'Al Ansari Exchange homepage', dateChecked: "2026-09-24" },
+      { url: "https://www.alansariexchange.com/exchange-rates/", label: 'Al Ansari — live exchange rates board', dateChecked: "2026-09-24" },
+      { url: "https://www.alansariexchange.com/remittances/", label: 'Al Ansari — remittance methods & partner list', dateChecked: "2026-09-24" },
+    ],
   },
   {
     slug: "lulu-exchange",
@@ -528,6 +587,11 @@ export const providers: Provider[] = [
         q: "Is LuLu Exchange the same as LuLu Hypermarket?",
         a: "They share the same parent group but are separate businesses. LuLu Exchange is a licensed exchange house regulated by the UAE Central Bank.",
       },
+    ],
+      sources: [
+      { url: "https://www.luluexchange.com/", label: 'LuLu Exchange homepage', dateChecked: "2026-09-24" },
+      { url: "https://www.luluexchange.com/en/exchange-rates.html", label: 'LuLu Exchange — live rates board', dateChecked: "2026-09-24" },
+      { url: "https://www.luluexchange.com/en/services/remittance.html", label: 'LuLu Exchange — remittance products', dateChecked: "2026-09-24" },
     ],
   },
 ];

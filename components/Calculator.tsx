@@ -90,12 +90,12 @@ export default function Calculator() {
             <div className="flex-1">
               <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
               <div className="muted text-xs">
-                fee {r.fee == null ? "—" : `AED ${r.fee}`} · markup {r.markup == null ? "—" : `${r.markup}%`} · {r.speed}
+                fee {r.fee == null ? "Check in app" : `AED ${r.fee}`} · markup {r.markup == null ? "Check in app" : `${r.markup}%`} · {r.speed}
               </div>
             </div>
-            <div className="text-right">
-              <b>{r.net == null ? "—" : `~${r.net.toFixed(0)} after fee & FX`}</b>
-              <div className="muted text-xs">estimate</div>
+            <div className="text-right min-w-[140px]">
+              <b>{r.net == null ? "Check in app" : `~${r.net.toFixed(0)} after fee & FX`}</b>
+              <div className="muted text-xs">{r.net == null ? "no static source" : "estimate"}</div>
             </div>
           </li>
         ))}

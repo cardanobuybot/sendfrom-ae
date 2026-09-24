@@ -1,13 +1,11 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { providers, type CorridorCode } from "@/config/providers";
+import { providers, displayFee, displayMarkup, type CorridorCode } from "@/config/providers";
 
 type SortKey = "name" | "fee" | "markup" | "speed" | "rating";
 
-function fmtFee(v: number | null) { return v == null ? "—" : `AED ${v}`; }
-function fmtMarkup(v: number | null) { return v == null ? "—" : `${v.toFixed(2)}%`; }
-function fmtRating(v: number | null) { return v == null ? "—" : v.toFixed(1); }
+function fmtRating(v: number | null) { return v == null ? "Check in app" : v.toFixed(1); }
 
 const corridors: { code: CorridorCode; label: string; flag: string }[] = [
   { code: "PH", label: "Philippines", flag: "🇵🇭" },
@@ -94,8 +92,8 @@ export default function ComparisonTable() {
                 <td className="p-3">
                   <Link href={`/${r.slug}`} className="underline">{r.name}</Link>
                 </td>
-                <td className="p-3">{fmtFee(r.fee)}</td>
-                <td className="p-3">{fmtMarkup(r.markup)}</td>
+                <td className="p-3">{displayFee(r.fee)}</td>
+                <td className="p-3">{displayMarkup(r.markup)}</td>
                 <td className="p-3">{r.speed}</td>
                 <td className="p-3">{fmtRating(r.rating)}</td>
               </tr>
@@ -104,8 +102,9 @@ export default function ComparisonTable() {
         </table>
       </div>
       <p className="muted text-xs mt-3">
-        Some numbers show "—" while we verify them provider-by-provider. Always
-        check the final amount inside the provider's app.
+        Fields marked "Check in app" are ones we cannot pin from an official
+        static source — the provider's calculator gives the live number.
+        Always confirm the final amount inside the provider's app before sending.
       </p>
     </div>
   );
