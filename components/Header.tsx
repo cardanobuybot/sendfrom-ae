@@ -12,7 +12,11 @@ const nav = [
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--card-border)] bg-[color:var(--bg)]/95 backdrop-blur">
+    /* Solid background: the semi-transparent + backdrop-blur combo made
+       any green content scrolling underneath (btn-primary, accent
+       border-l cards) bleed as a soft green blob behind the "sendfrom.ae"
+       logo on mobile in both dark and light mode. */
+    <header className="sticky top-0 z-30 border-b border-[var(--card-border)] bg-[color:var(--bg)]">
       <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-3">
         <Link href="/" className="font-bold tracking-tight text-lg hover:no-underline">
           {site.name}

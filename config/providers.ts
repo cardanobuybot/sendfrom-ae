@@ -54,6 +54,23 @@ export type CorridorInfo = {
   quoteRate?: number;
   /** Recipient amount for exactly 1,000 AED using the day's quote. */
   quoteRecipientAtAed1k?: number;
+  /**
+   * Short label shown in the Fee column of /compare when a promo is
+   * active (e.g. "No fee on 1st transfer"). Renders alongside a "promo"
+   * badge so readers never mistake a promo for the standard price.
+   */
+  promoFeeLabel?: string;
+  /**
+   * Short label for the FX column, e.g. "17.16 PHP (new customers,
+   * first AED 4,000, as of 24 Sep 2026)".
+   */
+  promoRateLabel?: string;
+  /**
+   * Recipient amount for exactly 1,000 AED under the promo scenario.
+   * Used by the calculator to rank promo rows and show a badged
+   * recipient number.
+   */
+  promoRecipientAtAed1k?: number;
 };
 
 /** Per-store app-store rating breakdown, shown alongside the averaged number. */
@@ -316,6 +333,10 @@ export const providers: Provider[] = [
         partners: ["GCash", "Maya", "BDO", "BPI", "Cebuana Lhuillier", "M.Lhuillier"],
         promoNote:
           "New-customer offer (as of 24 Sep 2026): promotional rate 1 AED = 17.16 PHP on the first AED 4,000 and no fee on the first transfer. New customers only, one per customer, limited time. Standard rate and fees apply afterwards — check in app.",
+        promoFeeLabel: "No fee on 1st transfer",
+        promoRateLabel:
+          "Promo rate 17.16 PHP (new customers, first AED 4,000, as of 24 Sep 2026)",
+        promoRecipientAtAed1k: 17160, // 1000 AED × 17.16, no fee
         feeAed1k: null,
         rateMarkupPct: null,
         speed: "minutes (Express) or 3-5 days (Economy)",

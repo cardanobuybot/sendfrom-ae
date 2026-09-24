@@ -155,6 +155,21 @@ export default function Calculator() {
  * date. Extrapolating to other amounts would put us in "guessing"
  * territory, which the sendfrom.ae data policy forbids.
  */
+function PromoBadge() {
+  return (
+    <span
+      className="ml-2 inline-block text-[10px] uppercase tracking-wide font-semibold rounded px-1.5 py-0.5"
+      style={{
+        background: "rgba(31,106,82,0.15)",
+        color: "var(--accent)",
+        border: "1px solid var(--accent)",
+      }}
+    >
+      promo
+    </span>
+  );
+}
+
 function VerifiedQuotes({
   corridor,
   currency,
@@ -162,42 +177,61 @@ function VerifiedQuotes({
   corridor: CorridorCode;
   currency: "PHP" | "INR" | "PKR";
 }) {
-  const rows = useMemo(() => {
-    return providers
-      .map((p) => {
-        const c = p.corridors.find((x) => x.country === corridor);
-        return {
-          slug: p.slug,
-          name: p.name,
-          fee: c?.feeAed1k ?? null,
-          rate: c?.quoteRate ?? null,
-          net: c?.quoteRecipientAtAed1k ?? null,
-          note: p.quoteNote,
-        };
-      })
+  const { rows, pinnedRevolut } = useMemo(() => {
+    const all = providers.map((p) => {
+      const c = p.corridors.find((x) => x.country === corridor);
+      // For ranking + display: prefer standard verified quote; fall back
+      // to promo quote when only that is pinned (Remitly PH new-customer).
+      const isPromo = c?.quoteRecipientAtAed1k == null && c?.promoRecipientAtAed1k != null;
+      return {
+        slug: p.slug,
+        name: p.name,
+        fee: c?.feeAed1k ?? null,
+        rate: c?.quoteRate ?? null,
+        net: c?.quoteRecipientAtAed1k ?? c?.promoRecipientAtAed1k ?? null,
+        promoFeeLabel: c?.promoFeeLabel,
+        promoRateLabel: c?.promoRateLabel,
+        note: p.quoteNote,
+        isPromo,
+      };
+    });
+    const rev = all.find((r) => r.slug === "revolut") ?? null;
+    const rest = all
+      .filter((r) => r.slug !== "revolut")
       .sort((a, b) => (b.net ?? -1) - (a.net ?? -1));
+    return { rows: rest, pinnedRevolut: rev };
   }, [corridor]);
 
   const anyQuoted = rows.some((r) => r.net != null);
-  if (!anyQuoted) return null;
+  if (!anyQuoted && !pinnedRevolut) return null;
 
   return (
     <div className="mt-6 pt-5 border-t border-[var(--card-border)]">
       <h3 className="text-lg font-semibold">Verified quotes at 1,000 AED</h3>
       <p className="muted text-xs mt-1">
         Numbers pulled directly from provider calculators on the checked
-        date. Others say "Check in app" — we don't invent figures.
+        date. Rows marked "promo" are conditional offers, not standard
+        pricing. Others say "Check in app" — we don't invent figures.
       </p>
       <ul className="mt-3 divide-y divide-[var(--card-border)]">
         {rows.map((r) => (
           <li key={r.slug} className="py-2 flex flex-wrap justify-between items-center gap-2">
-            <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
+            <div className="flex items-center gap-1">
+              <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
+              {r.isPromo && <PromoBadge />}
+            </div>
             <div className="text-right min-w-[180px]">
               {r.net != null ? (
                 <>
                   <b>{r.net.toLocaleString()} {currency}</b>
                   <div className="muted text-xs">
-                    fee AED {r.fee?.toFixed(2)} · rate {r.rate}
+                    {r.isPromo && r.promoFeeLabel
+                      ? r.promoFeeLabel
+                      : `fee AED ${r.fee?.toFixed(2)}`}
+                    {" · "}
+                    {r.isPromo && r.promoRateLabel
+                      ? "promo rate"
+                      : `rate ${r.rate}`}
                   </div>
                 </>
               ) : (
@@ -209,6 +243,18 @@ function VerifiedQuotes({
             </div>
           </li>
         ))}
+        {pinnedRevolut && (
+          <li className="py-3 mt-2 border-t border-dashed border-[var(--card-border)]">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
+              <Link href="/revolut" className="font-medium underline">Revolut</Link>
+              <span className="text-xs muted">Not yet available in the UAE</span>
+            </div>
+            <p className="muted text-xs mt-1">
+              Launch expected late 2026 —{" "}
+              <Link href="/revolut" className="underline">get notified →</Link>
+            </p>
+          </li>
+        )}
       </ul>
       {rows.find((r) => r.note) && (
         <p className="muted text-xs mt-3 italic">
