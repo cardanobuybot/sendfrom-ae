@@ -86,6 +86,39 @@ Vercel will issue a Let's Encrypt certificate automatically within a couple of m
 
 ---
 
+## IndexNow (Bing, Yandex)
+
+We ping the [IndexNow](https://www.indexnow.org/) API after every production
+deploy so search engines pick up new/updated pages within seconds instead
+of waiting for the next crawl. Google does not currently accept IndexNow;
+Bing and Yandex do (and Copilot / BingChat pull from Bing's index).
+
+**Key file:** `public/d46611b4d4f75a3ef9468c1b74f24344.txt` — served at
+`https://sendfrom.ae/d46611b4d4f75a3ef9468c1b74f24344.txt`. Do not rename
+or delete this file; the IndexNow endpoint verifies ownership against it.
+
+**Automatic post-deploy submission:**
+`.github/workflows/indexnow.yml` listens for GitHub Deployment status
+events. When Vercel reports a `success` for the `Production` environment,
+it runs `node scripts/indexnow.mjs` to submit every URL from
+`https://sendfrom.ae/sitemap.xml`.
+
+**Manual submission:**
+
+```bash
+# submit ALL urls from the live sitemap
+npm run indexnow
+
+# submit ONE path (auto-prepends https://sendfrom.ae)
+node scripts/indexnow.mjs /revolut
+
+# submit ONE absolute URL
+node scripts/indexnow.mjs https://sendfrom.ae/blog/is-revolut-available-in-uae
+```
+
+The script first verifies the key file is reachable, then posts to
+`https://api.indexnow.org/indexnow`. HTTP 200 or 202 = accepted.
+
 ## Google Search Console
 
 1. Claim `https://sendfrom.ae` in [Search Console](https://search.google.com/search-console/).
