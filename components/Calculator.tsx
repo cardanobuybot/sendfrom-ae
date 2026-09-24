@@ -1,64 +1,82 @@
 "use client";
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { providers, type CorridorCode } from "@/config/providers";
+import { useEffect, useMemo, useState } from "react";
+import type { CorridorCode } from "@/config/providers";
 
 /**
- * Very simple estimator. Reads the SAME data file as the comparison table.
- * When we plug in a live rates API, replace `estimateRecipient` with a call
- * to that API — the UI stays the same.
+ * Mid-market rate reference card.
+ *
+ * Purpose: give visitors a single, honest anchor before they open a
+ * provider's app — "at the raw exchange rate, my AED gets me X of the
+ * local currency". Every provider will hand back slightly less than
+ * that; the difference is fees + FX markup.
+ *
+ * Per-provider net amounts are DELIBERATELY NOT shown here. Until we
+ * pin real quotes into config/providers.ts, showing provider-specific
+ * numbers would be guessing — which we don't do.
+ *
+ * Data comes from GET /api/mid-rate (server-cached 1h, sources
+ * open.er-api.com — free, no key, supports AED base).
  */
-function estimateRecipient(
-  amountAed: number,
-  feeAed: number | null,
-  markupPct: number | null,
-): number | null {
-  if (feeAed == null || markupPct == null) return null;
-  // We deliberately do NOT put a mid-market rate here — that must come from
-  // a live source at the point where we integrate one.
-  // For the UI we only show the "amount that goes into FX" after the fee.
-  const afterFee = Math.max(0, amountAed - feeAed);
-  return afterFee * (1 - markupPct / 100);
+
+type MidRatePayload = {
+  base: "AED";
+  rates: { PHP: number; INR: number; PKR: number };
+  updatedUtc: string;
+  source: string;
+  sourceHost: string;
+};
+
+const corridors: { code: CorridorCode; label: string; flag: string; currency: string }[] = [
+  { code: "PH", label: "Philippines", flag: "🇵🇭", currency: "PHP" },
+  { code: "IN", label: "India", flag: "🇮🇳", currency: "INR" },
+  { code: "PK", label: "Pakistan", flag: "🇵🇰", currency: "PKR" },
+];
+
+function fmt(n: number): string {
+  // Local-style grouping, no currency symbol (PHP/INR/PKR appended by caller).
+  return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
 
-const corridors: { code: CorridorCode; label: string; flag: string }[] = [
-  { code: "PH", label: "Philippines", flag: "🇵🇭" },
-  { code: "IN", label: "India", flag: "🇮🇳" },
-  { code: "PK", label: "Pakistan", flag: "🇵🇰" },
-];
+function fmtWhen(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
+  } catch {
+    return iso;
+  }
+}
 
 export default function Calculator() {
   const [amount, setAmount] = useState<number>(1000);
   const [corridor, setCorridor] = useState<CorridorCode>("PH");
+  const [rate, setRate] = useState<MidRatePayload | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-  const rows = useMemo(() => {
-    return providers
-      .map((p) => {
-        const c = p.corridors.find((x) => x.country === corridor);
-        return {
-          slug: p.slug,
-          name: p.name,
-          fee: c?.feeAed1k ?? null,
-          markup: c?.rateMarkupPct ?? null,
-          net: estimateRecipient(amount, c?.feeAed1k ?? null, c?.rateMarkupPct ?? null),
-          speed: c?.speed ?? "—",
-        };
+  useEffect(() => {
+    fetch("/api/mid-rate")
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`mid-rate ${r.status}`);
+        return r.json();
       })
-      .sort((a, b) => {
-        const A = a.net ?? -Infinity;
-        const B = b.net ?? -Infinity;
-        return B - A;
-      });
-  }, [amount, corridor]);
+      .then((d: MidRatePayload) => setRate(d))
+      .catch((e) => setErr(e instanceof Error ? e.message : String(e)));
+  }, []);
+
+  const activeCurrency = corridors.find((c) => c.code === corridor)!.currency as "PHP" | "INR" | "PKR";
+  const targetAmount = useMemo(() => {
+    if (!rate) return null;
+    return amount * rate.rates[activeCurrency];
+  }, [amount, activeCurrency, rate]);
 
   return (
-    <section className="card p-5">
-      <h2 className="text-xl font-semibold mb-2">Estimator</h2>
+    <section className="card p-5" aria-labelledby="calc-title">
+      <h2 id="calc-title" className="text-xl font-semibold mb-2">Mid-market reference</h2>
       <p className="muted text-sm mb-4">
-        Ranks providers by the amount your recipient would get, based on the
-        latest fees and rate markup we have on file. Numbers are estimates —
-        always check the exact amount in the provider's app before sending.
+        A single honest anchor before you open a provider's app. This is the
+        raw exchange rate — providers add a fee and/or exchange-rate markup
+        on top, so the final amount you get in each app will be lower.
       </p>
+
       <div className="flex flex-wrap gap-3 items-end mb-4">
         <label className="flex flex-col text-sm">
           Amount (AED)
@@ -75,6 +93,7 @@ export default function Calculator() {
           {corridors.map((c) => (
             <button
               key={c.code}
+              type="button"
               onClick={() => setCorridor(c.code)}
               className={"btn text-sm " + (corridor === c.code ? "btn-primary" : "")}
               aria-pressed={corridor === c.code}
@@ -84,29 +103,40 @@ export default function Calculator() {
           ))}
         </div>
       </div>
-      <ul className="divide-y divide-[var(--card-border)]">
-        {rows.map((r) => (
-          <li key={r.slug} className="py-2 flex justify-between items-center gap-3">
-            <div className="flex-1">
-              <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
-              <div className="muted text-xs">
-                fee {r.fee == null ? "Check in app" : `AED ${r.fee}`} · markup {r.markup == null ? "Check in app" : `${r.markup}%`} · {r.speed}
-              </div>
-            </div>
-            <div className="text-right min-w-[140px]">
-              <b>{r.net == null ? "Check in app" : `~${r.net.toFixed(0)} after fee & FX`}</b>
-              <div className="muted text-xs">{r.net == null ? "no static source" : "estimate"}</div>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <p className="muted text-xs mt-3">
-        {/* Live-rates hook: replace estimateRecipient() with a call to your live
-            FX + fee API. Keep the shape of the row so the UI does not change. */}
-        Recipient amount is shown in AED terms (after fee, after FX markup). To
-        show local currency (PHP / INR / PKR), plug in a mid-market rates
-        source in <code>components/Calculator.tsx</code>.
-      </p>
+
+      {err && (
+        <p className="text-sm text-red-500">
+          Couldn't load the reference rate ({err}). Check any provider's app
+          for the current rate.
+        </p>
+      )}
+
+      {!err && !rate && <p className="muted text-sm">Loading current rate…</p>}
+
+      {rate && amount > 0 && targetAmount != null && (
+        <>
+          <p className="mt-2 text-lg leading-relaxed">
+            At the mid-market rate,{" "}
+            <b>{fmt(amount)} AED ≈ {fmt(targetAmount)} {activeCurrency}</b>.
+          </p>
+          <p className="mt-2 text-sm muted">
+            Providers add a fee and/or exchange-rate markup — compare the
+            final amount in each app.
+          </p>
+          <p className="mt-4 text-xs muted">
+            Rate from{" "}
+            <a
+              href={rate.sourceHost}
+              rel="noopener noreferrer"
+              target="_blank"
+              className="underline"
+            >
+              {rate.source}
+            </a>{" "}
+            · updated {fmtWhen(rate.updatedUtc)} · cached hourly.
+          </p>
+        </>
+      )}
     </section>
   );
 }
