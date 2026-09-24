@@ -17,6 +17,7 @@ const methodLabels: Record<string, string> = {
   maya: "Maya",
   upi: "UPI",
   wallet: "E-wallet",
+  home_delivery: "Home delivery",
 };
 
 const countryLabels: Record<string, string> = {
@@ -77,15 +78,71 @@ export default function ProviderPage({ slug }: { slug: string }) {
               <b>Delivery:</b>{" "}
               {c.methods.map((m) => methodLabels[m] ?? m).join(", ")}
             </p>
+            {c.partners && c.partners.length > 0 && (
+              <p className="text-sm mt-1 muted">
+                <b className="text-[color:var(--fg)]">Partners:</b> {c.partners.join(" · ")}
+              </p>
+            )}
             <p className="text-sm mt-1 muted">
               Fee (AED 1,000): {displayFee(c.feeAed1k)} · FX markup: {displayMarkup(c.rateMarkupPct)}
               {(c.minAed != null || c.maxAed != null) && (
                 <> · Limits: {displayLimit(c.minAed)}–{displayLimit(c.maxAed)}</>
               )}
             </p>
+            {c.promoNote && (
+              <div
+                className="mt-3 p-3 rounded-lg text-sm"
+                style={{
+                  background: "var(--card2, rgba(79,165,132,0.08))",
+                  border: "1px dashed var(--accent)",
+                }}
+              >
+                <b>Welcome offer</b> · {c.promoNote}
+              </div>
+            )}
           </div>
         ))}
       </div>
+
+      {(p.paymentMethods || p.regulator || p.appRatingDetail) && (
+        <section className="mt-8 grid sm:grid-cols-2 gap-4">
+          {p.paymentMethods && p.paymentMethods.length > 0 && (
+            <div className="card p-4">
+              <h3 className="font-semibold mb-2">Payment methods (UAE side)</h3>
+              <p className="text-sm">{p.paymentMethods.join(" · ")}</p>
+            </div>
+          )}
+          {p.regulator && (
+            <div className="card p-4">
+              <h3 className="font-semibold mb-2">Regulator</h3>
+              <p className="text-sm">{p.regulator}</p>
+            </div>
+          )}
+          {p.appRatingDetail && (
+            <div className="card p-4 sm:col-span-2">
+              <h3 className="font-semibold mb-2">App-store ratings</h3>
+              <p className="text-sm">
+                {p.appRatingDetail.ios && (
+                  <>
+                    App Store <b>★ {p.appRatingDetail.ios.rating}</b>{" "}
+                    <span className="muted">({p.appRatingDetail.ios.count} ratings)</span>
+                  </>
+                )}
+                {p.appRatingDetail.ios && p.appRatingDetail.android && <span className="mx-2 muted">·</span>}
+                {p.appRatingDetail.android && (
+                  <>
+                    Google Play <b>★ {p.appRatingDetail.android.rating}</b>{" "}
+                    <span className="muted">({p.appRatingDetail.android.count} ratings)</span>
+                  </>
+                )}
+              </p>
+              <p className="muted text-xs mt-2">
+                As displayed on the provider's own site on {p.dataLastUpdated}.
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-4 mt-8">
         <div className="card p-4">

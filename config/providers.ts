@@ -21,11 +21,19 @@ export type DeliveryMethod =
   | "gcash"
   | "maya"
   | "upi"
-  | "wallet";
+  | "wallet"
+  | "home_delivery";
 
 export type CorridorInfo = {
   country: CorridorCode;
   methods: DeliveryMethod[];
+  /** Named partner brands for this corridor, e.g. ["GCash", "BDO", ...]. */
+  partners?: string[];
+  /**
+   * Promotional / welcome-offer note (dated). Rendered separately from
+   * the standard rate so first-transfer rates never look like the norm.
+   */
+  promoNote?: string;
   /**
    * Flat transfer fee in AED for a 1,000 AED transfer.
    * `null` renders as "Check in app" on the site (see displayFee()).
@@ -37,6 +45,12 @@ export type CorridorInfo = {
   speed: string;
   minAed: number | null;
   maxAed: number | null;
+};
+
+/** Per-store app-store rating breakdown, shown alongside the averaged number. */
+export type AppRatingDetail = {
+  ios?: { rating: number; count: string };
+  android?: { rating: number; count: string };
 };
 
 /**
@@ -66,6 +80,12 @@ export type Provider = {
   cons: string[];
   /** App store rating (average of iOS/Android) if publicly known. `null` if unclear. */
   appRating: number | null;
+  /** Per-store breakdown for provider page (iOS + Google Play). */
+  appRatingDetail?: AppRatingDetail;
+  /** UAE-side funding methods, e.g. "Visa debit", "prepaid cards". */
+  paymentMethods?: string[];
+  /** Named regulator (e.g. "DFSA", "CBUAE"). */
+  regulator?: string;
   /** ISO date the numbers on this page were verified. */
   dataLastUpdated: string;
   /** Step-by-step "how to send" instructions. */
@@ -260,7 +280,10 @@ export const providers: Provider[] = [
     corridors: [
       {
         country: "PH",
-        methods: ["bank_deposit", "cash_pickup", "gcash", "maya"],
+        methods: ["bank_deposit", "cash_pickup", "gcash", "maya", "home_delivery"],
+        partners: ["GCash", "Maya", "BDO", "BPI", "Cebuana Lhuillier", "M.Lhuillier"],
+        promoNote:
+          "New-customer offer (as of 24 Sep 2026): promotional rate 1 AED = 17.16 PHP on the first AED 4,000 and no fee on the first transfer. New customers only, one per customer, limited time. Standard rate and fees apply afterwards — check in app.",
         feeAed1k: null,
         rateMarkupPct: null,
         speed: "minutes (Express) or 3-5 days (Economy)",
@@ -289,13 +312,27 @@ export const providers: Provider[] = [
     pros: [
       "Very fast Express option",
       "Wide cash-pickup network in PH, IN, PK",
-      "GCash and Maya delivery for the Philippines",
+      "GCash, Maya, home-delivery + major PH banks (BDO, BPI, Cebuana Lhuillier, M.Lhuillier)",
+      "Regulated by the DFSA in the UAE",
     ],
     cons: [
       "Express is faster but noticeably more expensive than Economy",
       "First-transfer promotional rate can be misleading — check the regular rate too",
     ],
-    appRating: null,
+    // Averaged from iOS 4.9 / Android 4.8 as displayed on Remitly's site.
+    appRating: 4.85,
+    appRatingDetail: {
+      ios: { rating: 4.9, count: "4.2M+" },
+      android: { rating: 4.8, count: "1.4M+" },
+    },
+    paymentMethods: [
+      "Visa debit",
+      "Mastercard debit",
+      "Visa credit",
+      "Mastercard credit",
+      "Prepaid cards",
+    ],
+    regulator: "DFSA (Dubai Financial Services Authority)",
     dataLastUpdated: "2026-09-24",
     howToSend: [
       "Install Remitly and register with your Emirates ID.",
@@ -315,8 +352,9 @@ export const providers: Provider[] = [
       },
     ],
       sources: [
-      { url: "https://www.remitly.com/ae/en", label: 'Remitly UAE homepage & calculator', dateChecked: "2026-09-24" },
-      { url: "https://help.remitly.com/s/", label: 'Remitly Help Centre — Express vs Economy fee policy', dateChecked: "2026-09-24" },
+      { url: "https://www.remitly.com/ae/en", label: "Remitly UAE homepage & calculator", dateChecked: "2026-09-24" },
+      { url: "https://www.remitly.com/ae/en/money-transfer/send-money-to-philippines", label: "Remitly UAE → Philippines corridor page (welcome offer, delivery partners, app ratings)", dateChecked: "2026-09-24" },
+      { url: "https://help.remitly.com/s/", label: "Remitly Help Centre — Express vs Economy fee policy", dateChecked: "2026-09-24" },
     ],
   },
   {
