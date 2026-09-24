@@ -547,6 +547,14 @@ export const posts: BlogPost[] = [
       { kind: "p", text: "GCash and Maya wallet deliveries are usually faster and cheaper than a bank deposit. Cash pickup is convenient when the recipient has no bank account, but the fee is often the highest of the three options." },
       { kind: "h2", text: "Where to see the exact number for your transfer" },
       { kind: "p", text: "Open the Remitly app or its UAE website, enter the exact AED amount, choose the delivery method your recipient prefers, and read the recipient amount. That's the number that matters. Do the same in Wise and one exchange-house app (Al Ansari or LuLu) for the same amount. Send with whichever gives the biggest recipient number." },
+      { kind: "h2", text: "Comparison snapshot: Remitly welcome vs Wise standard (24 Sep 2026)" },
+      { kind: "p", text: "For AED 1,000 → PHP on the day we checked:" },
+      { kind: "ul", items: [
+        "Remitly welcome offer (new customers only, first transfer, first AED 4,000): rate 1 AED = 17.16 PHP, no fee → recipient would receive around 17,160 PHP.",
+        "Wise standard example quote: rate 17.1004 (mid-market), fee AED 11.74 → recipient 16,899.64 PHP.",
+      ] },
+      { kind: "p", text: "Two things to notice. First, Remitly's welcome offer looks better than Wise's standard quote — but it's a one-time promo, not the price you'll pay next month. Second, Wise is transparent about the price without a promotion: mid-market rate + a small flat fee, no gimmick. Check Remitly's standard rate on your second transfer before you decide which one becomes your regular provider." },
+      { kind: "note", text: "Numbers above pulled from Remitly's UAE→Philippines page and Wise's calculator on 24 Sep 2026 for sending 1,000 AED. Live rates and fees change daily — always confirm in the app." },
       { kind: "h2", text: "What Remitly does NOT charge for" },
       { kind: "ul", items: [
         "There is no monthly account fee.",

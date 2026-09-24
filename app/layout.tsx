@@ -17,8 +17,23 @@ export const metadata: Metadata = {
     description: site.description,
     url: site.url,
     type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: site.name }],
   },
-  twitter: { card: "summary_large_image", title: site.tagline, description: site.description },
+  twitter: {
+    card: "summary_large_image",
+    title: site.tagline,
+    description: site.description,
+    images: ["/og.png"],
+  },
+  icons: {
+    // Modern browsers pick SVG first — crisp at every zoom, then fall
+    // back to ICO for older ones. apple-touch-icon = iOS home-screen.
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   alternates: { canonical: site.url },
   robots: { index: true, follow: true },
   // Google Search Console placeholder — replace once you claim the site

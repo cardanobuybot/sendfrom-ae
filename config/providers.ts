@@ -45,6 +45,15 @@ export type CorridorInfo = {
   speed: string;
   minAed: number | null;
   maxAed: number | null;
+  /**
+   * The exchange rate the provider actually quoted on the day we checked
+   * (e.g. Wise shows mid-market — 17.1004 for AED→PHP on 2026-09-24).
+   * Used together with `quoteRecipientAtAed1k` to render a verified
+   * "1,000 AED → X" example that isn't extrapolated from anything.
+   */
+  quoteRate?: number;
+  /** Recipient amount for exactly 1,000 AED using the day's quote. */
+  quoteRecipientAtAed1k?: number;
 };
 
 /** Per-store app-store rating breakdown, shown alongside the averaged number. */
@@ -86,6 +95,13 @@ export type Provider = {
   paymentMethods?: string[];
   /** Named regulator (e.g. "DFSA", "CBUAE"). */
   regulator?: string;
+  /**
+   * A short caveat printed next to any verified quote row (e.g. Wise's
+   * example on 24 Sep 2026). Kept per-provider because different
+   * providers scope their quotes differently (payment method, weekday,
+   * etc.).
+   */
+  quoteNote?: string;
   /** ISO date the numbers on this page were verified. */
   dataLastUpdated: string;
   /** Step-by-step "how to send" instructions. */
@@ -207,34 +223,47 @@ export const providers: Provider[] = [
       {
         country: "PH",
         methods: ["bank_deposit", "gcash"],
-        feeAed1k: null,
-        rateMarkupPct: null,
-        speed: "minutes to 1 day",
+        // Wise quote from the calculator on 2026-09-24 (send 1,000 AED
+        // from an AED balance):
+        //   rate 17.1004 (mid-market)
+        //   fee 11.74 AED  →  recipient 16,899.64 PHP
+        //   delivery "in seconds"
+        feeAed1k: 11.74,
+        rateMarkupPct: 0,
+        speed: "in seconds",
         minAed: null,
         maxAed: null,
+        quoteRate: 17.1004,
+        quoteRecipientAtAed1k: 16899.64,
       },
       {
         country: "IN",
         methods: ["bank_deposit", "upi"],
-        feeAed1k: null,
-        rateMarkupPct: null,
-        speed: "minutes to 1 day",
+        // rate 26.1379, fee 11.09 AED → 25,848.03 INR, in seconds.
+        feeAed1k: 11.09,
+        rateMarkupPct: 0,
+        speed: "in seconds",
         minAed: null,
         maxAed: null,
+        quoteRate: 26.1379,
+        quoteRecipientAtAed1k: 25848.03,
       },
       {
         country: "PK",
         methods: ["bank_deposit"],
-        feeAed1k: null,
-        rateMarkupPct: null,
-        speed: "1-2 days",
+        // rate 75.4513, fee 13.34 AED → 74,444.78 PKR, in seconds.
+        feeAed1k: 13.34,
+        rateMarkupPct: 0,
+        speed: "in seconds",
         minAed: null,
         maxAed: null,
+        quoteRate: 75.4513,
+        quoteRecipientAtAed1k: 74444.78,
       },
     ],
     pros: [
       "Real mid-market rate — no hidden markup",
-      "Transparent flat fee shown before you send",
+      "Transparent flat fee shown before you send (~1.1-1.3% at 1,000 AED)",
       "Well-designed app, English-first",
     ],
     cons: [
@@ -244,6 +273,8 @@ export const providers: Provider[] = [
     ],
     appRating: null,
     dataLastUpdated: "2026-09-24",
+    quoteNote:
+      "Example quote from Wise calculator, 24 Sep 2026 — sending from an AED balance; fees may differ by payment method.",
     howToSend: [
       "Install the Wise app and register with your Emirates ID.",
       "Choose 'Send money' → recipient country (PH / IN / PK).",
@@ -264,6 +295,7 @@ export const providers: Provider[] = [
       sources: [
       { url: "https://wise.com/", label: 'Wise homepage & AED corridor calculator', dateChecked: "2026-09-24" },
       { url: "https://wise.com/help/articles/2932693", label: 'Wise Help — pricing of transfers (canonical fee policy)', dateChecked: "2026-09-24" },
+      { url: "https://wise.com/send-money", label: "Wise send-money calculator (source of the 24 Sep 2026 example quotes for AED→PHP/INR/PKR)", dateChecked: "2026-09-24" },
       { url: "https://wise.com/help/articles/2977951", label: 'Wise Help — send limits per country', dateChecked: "2026-09-24" },
     ],
   },

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import type { CorridorCode } from "@/config/providers";
+import Link from "next/link";
+import { providers, type CorridorCode } from "@/config/providers";
 
 /**
  * Mid-market rate reference card.
@@ -137,6 +138,83 @@ export default function Calculator() {
           </p>
         </>
       )}
+
+      <VerifiedQuotes corridor={corridor} currency={activeCurrency} />
     </section>
+  );
+}
+
+/**
+ * Small ranked list of providers for the currently-selected corridor.
+ * Rows with a pinned quote (`quoteRecipientAtAed1k`) show the real
+ * "1,000 AED → X" number. Rows without one show "Check in app" and
+ * link to their page so the reader can go verify.
+ *
+ * The 1,000 AED anchor is deliberate — we can only cite figures that
+ * we actually pulled from the provider's own quote page on a specific
+ * date. Extrapolating to other amounts would put us in "guessing"
+ * territory, which the sendfrom.ae data policy forbids.
+ */
+function VerifiedQuotes({
+  corridor,
+  currency,
+}: {
+  corridor: CorridorCode;
+  currency: "PHP" | "INR" | "PKR";
+}) {
+  const rows = useMemo(() => {
+    return providers
+      .map((p) => {
+        const c = p.corridors.find((x) => x.country === corridor);
+        return {
+          slug: p.slug,
+          name: p.name,
+          fee: c?.feeAed1k ?? null,
+          rate: c?.quoteRate ?? null,
+          net: c?.quoteRecipientAtAed1k ?? null,
+          note: p.quoteNote,
+        };
+      })
+      .sort((a, b) => (b.net ?? -1) - (a.net ?? -1));
+  }, [corridor]);
+
+  const anyQuoted = rows.some((r) => r.net != null);
+  if (!anyQuoted) return null;
+
+  return (
+    <div className="mt-6 pt-5 border-t border-[var(--card-border)]">
+      <h3 className="text-lg font-semibold">Verified quotes at 1,000 AED</h3>
+      <p className="muted text-xs mt-1">
+        Numbers pulled directly from provider calculators on the checked
+        date. Others say "Check in app" — we don't invent figures.
+      </p>
+      <ul className="mt-3 divide-y divide-[var(--card-border)]">
+        {rows.map((r) => (
+          <li key={r.slug} className="py-2 flex flex-wrap justify-between items-center gap-2">
+            <Link href={`/${r.slug}`} className="font-medium underline">{r.name}</Link>
+            <div className="text-right min-w-[180px]">
+              {r.net != null ? (
+                <>
+                  <b>{r.net.toLocaleString()} {currency}</b>
+                  <div className="muted text-xs">
+                    fee AED {r.fee?.toFixed(2)} · rate {r.rate}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <b>Check in app</b>
+                  <div className="muted text-xs">no static quote pinned yet</div>
+                </>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {rows.find((r) => r.note) && (
+        <p className="muted text-xs mt-3 italic">
+          {rows.find((r) => r.note)?.note}
+        </p>
+      )}
+    </div>
   );
 }

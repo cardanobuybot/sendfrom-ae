@@ -91,6 +91,12 @@ export default function ProviderPage({ slug }: { slug: string }) {
                 <> · Limits: {displayLimit(c.minAed)}–{displayLimit(c.maxAed)}</>
               )}
             </p>
+            {c.quoteRate != null && c.quoteRecipientAtAed1k != null && (
+              <p className="text-sm mt-1">
+                <b>1,000 AED → {c.quoteRecipientAtAed1k.toLocaleString()} {c.country === "PH" ? "PHP" : c.country === "IN" ? "INR" : "PKR"}</b>{" "}
+                <span className="muted">· rate {c.quoteRate}</span>
+              </p>
+            )}
             {c.promoNote && (
               <div
                 className="mt-3 p-3 rounded-lg text-sm"
@@ -105,6 +111,10 @@ export default function ProviderPage({ slug }: { slug: string }) {
           </div>
         ))}
       </div>
+
+      {p.quoteNote && (
+        <p className="muted text-xs mt-3 italic">{p.quoteNote}</p>
+      )}
 
       {(p.paymentMethods || p.regulator || p.appRatingDetail) && (
         <section className="mt-8 grid sm:grid-cols-2 gap-4">
