@@ -17,6 +17,11 @@ export default function ConsentBanner() {
   function accept() {
     try { localStorage.setItem("sf.consent", "1"); } catch { /* noop */ }
     setOpen(false);
+    // Broadcast so ClarityLoader (and any future analytics loader) can
+    // pick up the change without a page reload.
+    try {
+      window.dispatchEvent(new Event("sf-consent-changed"));
+    } catch { /* noop */ }
   }
   return (
     <div className="fixed bottom-3 left-3 right-3 z-50 max-w-3xl mx-auto card p-4 text-sm shadow-lg">

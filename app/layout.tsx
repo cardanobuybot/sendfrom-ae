@@ -4,6 +4,7 @@ import { site } from "@/config/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConsentBanner from "@/components/ConsentBanner";
+import ClarityLoader from "@/components/ClarityLoader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Footer />
         <ConsentBanner />
+        <ClarityLoader />
         <Analytics />
       </body>
     </html>

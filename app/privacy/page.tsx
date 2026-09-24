@@ -25,6 +25,37 @@ export default function Page() {
         links.
       </p>
 
+      <h2 className="text-2xl font-bold mt-8">Microsoft Clarity</h2>
+      <p className="mt-2 leading-relaxed">
+        With your consent, we also load Microsoft Clarity. Clarity is a
+        product-analytics tool operated by Microsoft. It collects:
+      </p>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>Click patterns and how far down each page you scroll.</li>
+        <li>Aggregated heatmaps built from many visitors' behaviour.</li>
+        <li>Session recordings — a replay of a visit as anonymised mouse-cursor and scroll movements. Form input values (for example, the email address in the Revolut notification form) are masked and never captured.</li>
+      </ul>
+      <p className="mt-4 leading-relaxed">
+        <b>Consent gate.</b> Clarity is loaded only after you click "OK" on
+        the consent banner. If you never click OK, Clarity is not loaded and
+        no data is sent to Microsoft. If you withdraw consent (by clearing
+        the <code>sf.consent</code> value in your browser storage), Clarity
+        will not load on your next page load.
+      </p>
+      <p className="mt-4 leading-relaxed">
+        <b>Data processor.</b> Once loaded, Clarity data is processed by
+        Microsoft under Microsoft's own privacy terms. See{" "}
+        <a
+          href="https://privacy.microsoft.com/privacystatement"
+          className="underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          privacy.microsoft.com/privacystatement
+        </a>{" "}
+        for the Microsoft Privacy Statement.
+      </p>
+
       <h2 className="text-2xl font-bold mt-8">Affiliate link tracking</h2>
       <p className="mt-2 leading-relaxed">
         Some outbound links to money-transfer providers pass through our{" "}
