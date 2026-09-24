@@ -10,6 +10,7 @@ import RevolutNotify from "@/components/RevolutNotify";
 import AffiliateButton from "@/components/AffiliateButton";
 import FAQ from "@/components/FAQ";
 import DataDisclaimer from "@/components/DataDisclaimer";
+import AuthorByline, { authorJsonLd } from "@/components/AuthorByline";
 
 export const metadata: Metadata = {
   title: "Revolut in the UAE — status & what to expect",
@@ -65,6 +66,7 @@ export default function RevolutPillar() {
       <p className="muted mt-2">
         Independent guide to Revolut's UAE launch: what has actually been announced, what is still unknown, and what you can do while you wait.
       </p>
+      <div className="mt-2"><AuthorByline updatedISO={revolutStatus.lastUpdated} /></div>
 
       <RevolutStatus />
 
@@ -142,7 +144,7 @@ export default function RevolutPillar() {
               "Independent 2026 status page for Revolut's UAE launch — regulatory milestones, planned features, and alternatives available today.",
             datePublished: "2026-09-24",
             dateModified: revolutStatus.lastUpdated,
-            author: { "@type": "Organization", name: site.name },
+            author: authorJsonLd(),
             publisher: { "@type": "Organization", name: site.name, url: site.url },
             mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url}/revolut` },
           }),

@@ -3,6 +3,7 @@ import { site } from "@/config/site";
 
 const legalLinks = [
   { href: "/about", label: "About" },
+  { href: "/about/author", label: "Author" },
   { href: "/contact", label: "Contact" },
   { href: "/how-we-compare", label: "How we compare" },
   { href: "/affiliate-disclosure", label: "Affiliate disclosure" },

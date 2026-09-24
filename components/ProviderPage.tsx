@@ -9,6 +9,7 @@ import IndependentBanner from "./IndependentBanner";
 import FAQ from "./FAQ";
 import DataDisclaimer from "./DataDisclaimer";
 import RevolutNotify from "./RevolutNotify";
+import AuthorByline, { authorJsonLd } from "./AuthorByline";
 
 const methodLabels: Record<string, string> = {
   bank_deposit: "Bank deposit",
@@ -52,6 +53,7 @@ export default function ProviderPage({ slug }: { slug: string }) {
 
       <h1 className="text-3xl font-bold">{p.name}</h1>
       <p className="muted mt-1">{p.tagline}</p>
+      <div className="mt-2"><AuthorByline updatedISO={p.dataLastUpdated} /></div>
 
       {p.statusNote && (
         <div className="card p-4 mt-4 border-l-4" style={{ borderLeftColor: "var(--accent)" }}>
@@ -210,7 +212,7 @@ export default function ProviderPage({ slug }: { slug: string }) {
             headline: `${p.name} — send money from the UAE`,
             description: p.tagline,
             dateModified: p.dataLastUpdated,
-            author: { "@type": "Organization", name: site.name },
+            author: authorJsonLd(),
             publisher: { "@type": "Organization", name: site.name, url: site.url },
           }),
         }}

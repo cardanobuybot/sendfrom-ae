@@ -8,6 +8,7 @@ import RevolutStatus from "@/components/RevolutStatus";
 import IndependentBanner from "@/components/IndependentBanner";
 import AffiliateButton from "@/components/AffiliateButton";
 import DataDisclaimer from "@/components/DataDisclaimer";
+import AuthorByline, { authorJsonLd } from "@/components/AuthorByline";
 
 export async function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
@@ -51,12 +52,7 @@ export default async function PostPage(
     <article>
       {isRevolutPost && <IndependentBanner providerName="Revolut" />}
 
-      <p className="muted text-xs">
-        Published <b>{p.date}</b>
-        {p.dateModified && p.dateModified !== p.date ? (
-          <> · updated <b>{p.dateModified}</b></>
-        ) : null}
-      </p>
+      <AuthorByline dateISO={p.date} updatedISO={p.dateModified} />
       <h1 className="text-3xl font-bold mt-2">{p.title}</h1>
       <p className="muted mt-2">{p.description}</p>
 
@@ -146,7 +142,7 @@ export default async function PostPage(
             description: p.description,
             datePublished: p.date,
             dateModified: p.dateModified ?? p.date,
-            author: { "@type": "Organization", name: site.name },
+            author: authorJsonLd(),
             publisher: { "@type": "Organization", name: site.name, url: site.url },
             mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url}/blog/${p.slug}` },
           }),

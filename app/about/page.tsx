@@ -25,7 +25,8 @@ export default function Page() {
       </p>
       <p className="mt-4 leading-relaxed">
         Questions, corrections or partnerships:{" "}
-        <a href="/contact" className="underline">contact us</a>.
+        <a href="/contact" className="underline">contact us</a>. Written and
+        edited by <a href="/about/author" className="underline">Pavels S.</a>.
       </p>
     </>
   );
