@@ -63,19 +63,24 @@ export default function ClarityLoader() {
 
   if (!consented) return null;
 
+  // Exact snippet Microsoft ships for Clarity, with ?ref=bwt (their
+  // Bing-Webmaster-Tools attribution flag). Inline-queued so any early
+  // clarity('consent') / clarity('event', …) call from us is buffered
+  // until the external script finishes loading. After the queue-shim
+  // is defined we immediately signal consent-granted.
+  const snippet = `
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
+    try { window.clarity && window.clarity("consent"); } catch (e) {}
+  `;
   return (
     <Script
       id="ms-clarity"
       strategy="afterInteractive"
-      src={`https://www.clarity.ms/tag/${CLARITY_PROJECT_ID}`}
-      onLoad={() => {
-        // Signal Clarity consent-mode: user granted analytics consent.
-        try {
-          window.clarity?.("consent");
-        } catch {
-          /* noop */
-        }
-      }}
+      dangerouslySetInnerHTML={{ __html: snippet }}
     />
   );
 }
