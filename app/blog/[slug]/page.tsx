@@ -45,6 +45,7 @@ export default async function PostPage(
   const related = (p.relatedSlugs ?? [])
     .map((s) => getPost(s))
     .filter((x): x is NonNullable<typeof x> => !!x);
+  const cta = p.ctaProvider;
 
   return (
     <article>
@@ -86,6 +87,32 @@ export default async function PostPage(
           <AffiliateButton slug="revolut">Get notified when Revolut opens in the UAE</AffiliateButton>
           <Link href="/revolut" className="btn">Revolut UAE — full status</Link>
         </div>
+      )}
+
+      {cta && !isRevolutPost && (
+        <div className="mt-8 flex flex-wrap gap-3">
+          <AffiliateButton slug={cta} />
+          <Link href={`/${cta}`} className="btn">Full {cta.replace(/-/g, " ")} review</Link>
+          <Link href="/compare" className="btn">Compare all providers</Link>
+        </div>
+      )}
+
+      {p.sources && p.sources.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold mb-3">Sources</h2>
+          <ul className="space-y-2 text-sm">
+            {p.sources.map((s) => (
+              <li key={s.url} className="card p-3">
+                <a href={s.url} rel="noopener noreferrer" target="_blank" className="underline break-all">
+                  {s.label}
+                </a>
+                <div className="muted text-xs mt-1">
+                  {s.url} · checked {s.dateChecked}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {related.length > 0 && (
