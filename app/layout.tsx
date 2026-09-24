@@ -32,6 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Impact affiliate network site-verification.
+            MUST use attribute "value" (not "content") — Next.js Metadata API
+            would emit "content=", which Impact rejects, so we render raw. */}
+        <meta name="impact-site-verification" {...({ value: "f325391d-3f95-4347-9ecd-b1b0701a63cc" } as { value: string })} />
         <script
           // Read theme early to avoid flash. No cookies — reads a preference key only.
           dangerouslySetInnerHTML={{
